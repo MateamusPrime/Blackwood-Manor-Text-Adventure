@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"gh auth status 2>&1\",\"description\":\"Check GitHub CLI auth status\"}",
-  "error": "Exit code 127\n/usr/bin/bash: line 1: gh: command not found",
-  "timestamp": "2026-04-13T03:29:01.424Z",
+  "tool_name": "mcp__Kapture_Browser_Automation__new_tab",
+  "tool_input_preview": "{\"url\":\"https://blackwood-manor-text-adventure.vercel.app/\"}",
+  "error": "{\n  \"error\": {\n    \"message\": \"New tab failed to connect within timeout. Make sure the Kapture extension is installed.\"\n  }\n}",
+  "timestamp": "2026-04-13T03:39:14.123Z",
   "retry_count": 1
 }

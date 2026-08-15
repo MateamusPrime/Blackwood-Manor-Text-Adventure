@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blackwood Manor
 
-## Getting Started
+A haunted-house text adventure that runs in the browser. A missing man, a cursed house, and 33 rooms that each get their own hand-drawn ASCII scene.
 
-First, run the development server:
+Type `START` to begin, `HELP` for the verb list, and `EXAMINE` everything.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Next.js 16, React 19, TypeScript. No game engine, no libraries beyond the framework.
+
+---
+
+## What it looks like
+
+![Title screen](docs/screenshots/01-title.png)
+
+The play view. Room art on the left changes with every room, inventory tracks below it, health and move count across the top. Rooms report their own exits, and taking something updates the panel immediately.
+
+![Gameplay: the Grand Foyer, a taken item, and the inventory panel](docs/screenshots/02-gameplay.png)
+
+`HELP` at any time. This is the whole verb set.
+
+![Command list](docs/screenshots/03-commands.png)
+
+---
+
+## The parser
+
+The interesting part of a text adventure is that the player types whatever they want and the game has to cope.
+
+`engine/parser.ts` normalizes input into a `{ verb, noun, preposition, target }` shape before any game logic runs. It strips articles (`the`, `a`, `an`, `some`), maps **75 verb aliases** down to a canonical set, and handles direction shorthand, so all of these do the same thing:
+
+```
+go north      north      n
+look at the painting      examine painting      inspect painting
+take the rusty key        grab rusty key        pick up rusty key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Prepositions are parsed rather than ignored, which is what makes two-object commands work:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+use crowbar on floorboards
+combine locket with chain
+set dial to 1847
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Unknown input fails in-character rather than crashing. `take lantern` in a room with no lantern answers `You don't see a "lantern" here to take.`
 
-## Learn More
+## How the world is described
 
-To learn more about Next.js, take a look at the following resources:
+Rooms, items and events are data, not code. `engine/types.ts` defines the shapes and `data/` holds the content, so adding a room means adding an object, never touching the engine.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+An exit can be locked, can require a specific item, can require a flag to be set, or can be hidden until something reveals it:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```ts
+{ direction: 'north', roomId: 'library', locked: true,
+  requiredItem: 'brass-key', lockMessage: 'The door will not budge.' }
+```
 
-## Deploy on Vercel
+Items can act alone or on a target, set flags, consume themselves, hand you something else, teleport you, or hurt you. Rooms fire events on entry that can be conditional and can be marked `once` so they never repeat.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The current build has **33 rooms, 24 items, 19 world flags, 4 NPCs with conditional dialogue, 11 hidden objects and 3 dark rooms** you need a light source to survive.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Layout
+
+```
+engine/
+  parser.ts       text -> { verb, noun, preposition, target }
+  commands.ts     one handler per verb, 580 lines
+  gameState.ts    reducer over a GameAction union
+  events.ts       room entry events, once-firing
+  types.ts        the whole data model
+data/
+  rooms.ts        33 rooms, exits, items, NPCs
+  items.ts        24 items and their interactions
+  art.ts          33 ASCII scenes
+components/       GameScreen, TextOutput, CommandInput, ArtPanel, Inventory, StatusBar
+hooks/
+  useGame.ts      dispatches parsed commands into the reducer
+  useCommandHistory.ts   arrow-key recall
+```
+
+State is a single `GameState` object moved by a reducer over a typed `GameAction` union, which is what makes `save` and `load` two lines: serialize the state, restore the state.
+
+## Running it
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000.
+
+## License
+
+Source-available for reading and evaluation. See `LICENSE`. Not open source.

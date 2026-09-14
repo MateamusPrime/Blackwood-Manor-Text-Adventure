@@ -432,22 +432,6 @@ export const roomArt: Record<string, string> = {
   |_____________________|
    ~ research remains ~ `,
 
-  'hallway': `
-   _____________________
-  |   |             |   |
-  |   |             |   |
-  |   |   hallway   |   |
-  |   |             |   |
-  |   |    . . .    |   |
-  |   |             |   |
-  |   |   onwards   |   |
-  |   |             |   |
-  |   |    . . .    |   |
-  |   |             |   |
-  |   |             |   |
-  |___|_____________|___|
-   ~ floorboards creak~ `,
-
   'upper-hallway': `
    _____________________
   |   |             |   |
@@ -514,40 +498,6 @@ export const roomArt: Record<string, string> = {
   |  pots broken   pot   |
   |_____________________|
    ~ growth gone wrong ~ `,
-
-  'outside-crypt': `
-   _____________________
-  |   _ _ _ _ _ _ _     |
-  |  | BLACKWOOD   |    |
-  |  |  FAMILY     |    |
-  |  |  C R Y P T  |    |
-  |  |_____________|    |
-  |   |           |     |
-  |   |  heavy    |     |
-  |   | iron gate |     |
-  |   |  . . .    |     |
-  |   |___________|     |
-  |                      |
-  |  dead ivy climbs     |
-  |_____________________|
-   ~ cold emanates out ~ `,
-
-  'drawing-room': `
-   _____________________
-  |  [portrait] [port.] |
-  |  .---------------.  |
-  |  |  sitting area |  |
-  |  |  .--. .--.    |  |
-  |  |  |  | |  |    |  |
-  |  |  '--' '--'     |  |
-  |  '---------------'  |
-  |   _______________   |
-  |  |   low table   |  |
-  |  | o  tea set  o |  |
-  |  |_______________|  |
-  |  curtains : thick   |
-  |_____________________|
-   ~ someone was here ~ `,
 
   '_default': `
    _____________________

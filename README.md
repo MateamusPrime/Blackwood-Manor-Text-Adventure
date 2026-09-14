@@ -89,6 +89,21 @@ npm run dev
 
 Open http://localhost:3000.
 
+## Running the tests
+
+```bash
+npm test          # once
+npm run test:watch
+```
+
+228 Vitest tests over the engine and the world data: the parser's aliases and
+preposition handling, the reducer, room entry events, every command handler
+against a fixture world, and integrity checks over `data/` — that every exit
+leads to a real room, every locked exit can be opened, every granted item
+exists, and every room has art.
+
+CI runs `lint`, `typecheck`, `test` and `build` on every pull request.
+
 ## License
 
 Source-available for reading and evaluation. See `LICENSE`. Not open source.

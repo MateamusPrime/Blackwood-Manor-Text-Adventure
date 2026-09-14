@@ -1,10 +1,13 @@
 import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  plugins: [react()],
   test: {
-    // The suite covers the pure game engine (parser, reducer, events,
-    // command handlers) and the world data, none of which touch the DOM.
+    // The engine suite (parser, reducer, events, commands, world data) is pure
+    // logic and runs fastest with no DOM. Files that need one opt in with a
+    // `// @vitest-environment jsdom` docblock.
     environment: 'node',
-    include: ['__tests__/**/*.test.ts'],
+    include: ['__tests__/**/*.test.{ts,tsx}'],
   },
 });

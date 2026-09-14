@@ -19,14 +19,28 @@ updates:
       production-minor-patch:
         dependency-type: production
         update-types: [minor, patch]
-    # next and react move together with their own peers; a lone bump of one of
-    # them is more likely to break than to help, so leave majors to a human.
+    # Majors that need a person, not a green check. The first sweep raised
+    # typescript 5 -> 7, eslint 9 -> 10 and @types/node 22 -> 26 as individual
+    # pull requests, which is how this list was found to be too short.
     ignore:
+      # next, react and react-dom move with their own peers; bumping one alone
+      # is likelier to break than to help.
       - dependency-name: next
         update-types: [version-update:semver-major]
       - dependency-name: react
         update-types: [version-update:semver-major]
       - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      # A language major across a codebase in strict mode is a migration.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # eslint majors move the config format, and eslint-config-next pins the
+      # major it supports.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+      # @types/node majors track Node majors. CI runs Node 22, so types for a
+      # newer Node would describe APIs the runtime does not have.
+      - dependency-name: '@types/*'
         update-types: [version-update:semver-major]
 
   # The workflow's own actions pin to major tags that stop receiving fixes.

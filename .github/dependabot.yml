@@ -1,0 +1,36 @@
+version: 2
+
+updates:
+  # npm dependencies. Security updates are raised as soon as an advisory lands,
+  # regardless of this schedule; the weekly run is for everything else.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for the routine churn rather than one per package. Anything
+      # Dependabot raises for a security advisory is excluded from grouping by
+      # design, so those still arrive on their own and stay easy to spot.
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+      production-minor-patch:
+        dependency-type: production
+        update-types: [minor, patch]
+    # next and react move together with their own peers; a lone bump of one of
+    # them is more likely to break than to help, so leave majors to a human.
+    ignore:
+      - dependency-name: next
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+
+  # The workflow's own actions pin to major tags that stop receiving fixes.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

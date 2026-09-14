@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { rooms } from '../data/rooms';
 import { items } from '../data/items';
@@ -330,5 +331,94 @@ describe('the starting state', () => {
     for (const id of getInitialState().inventory) {
       expect(itemIds.has(id), `starting item "${id}" is not defined`).toBe(true);
     }
+  });
+});
+
+// A flag only works as a gate if something, somewhere, can actually set it. The
+// world data sets flags through room events, item results and NPC dialogue; the
+// engine and the game hook set a further set as string literals (winding the
+// music box, assembling the diary, and so on). Both halves are gathered here so
+// the check covers the whole game rather than just data/.
+const CODE_THAT_SETS_FLAGS = [
+  'engine/commands.ts',
+  'engine/events.ts',
+  'hooks/useGame.ts',
+];
+
+function flagsSetInCode(): Set<string> {
+  const found = new Set<string>();
+  for (const file of CODE_THAT_SETS_FLAGS) {
+    const source = fs.readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+    for (const m of source.matchAll(/(?:\bflag|setsFlag):\s*'([^']+)'/g)) found.add(m[1]);
+  }
+  return found;
+}
+
+function flagsSetInData(): Set<string> {
+  const found = new Set<string>();
+  for (const [, room] of roomEntries) {
+    for (const event of room.onEnter ?? []) {
+      if (event.type === 'setFlag' && event.flag) found.add(event.flag);
+    }
+    for (const npc of room.npcs) {
+      for (const line of npc.dialogue) if (line.setsFlag) found.add(line.setsFlag);
+    }
+  }
+  for (const item of Object.values(items)) {
+    if (item.useAlone?.setsFlag) found.add(item.useAlone.setsFlag);
+    for (const result of Object.values(item.useWith ?? {})) {
+      if (result.setsFlag) found.add(result.setsFlag);
+    }
+  }
+  return found;
+}
+
+// Every place the world refuses to do something until a flag is set, with a
+// label naming where the gate is so a failure points at the content.
+function everyGate(): { flag: string; where: string }[] {
+  const gates: { flag: string; where: string }[] = [];
+  for (const [key, room] of roomEntries) {
+    for (const exit of room.exits) {
+      if (exit.requiredFlag) gates.push({ flag: exit.requiredFlag, where: `${key} exit ${exit.direction}` });
+    }
+    for (const item of room.items) {
+      if (item.revealedByFlag) gates.push({ flag: item.revealedByFlag, where: `${key} item ${item.id}` });
+    }
+    for (const npc of room.npcs) {
+      if (npc.requiredFlag) gates.push({ flag: npc.requiredFlag, where: `${key} npc ${npc.id}` });
+      if (npc.appeaseFlag) gates.push({ flag: npc.appeaseFlag, where: `${key} npc ${npc.id} appease` });
+      for (const line of npc.dialogue) {
+        if (line.condition) gates.push({ flag: line.condition, where: `${key} npc ${npc.id} dialogue` });
+      }
+    }
+    for (const event of room.onEnter ?? []) {
+      if (event.condition) gates.push({ flag: event.condition, where: `${key} event ${event.type}` });
+      if (event.notCondition) gates.push({ flag: event.notCondition, where: `${key} event ${event.type} (not)` });
+    }
+  }
+  return gates;
+}
+
+describe('flags', () => {
+  it('can set every flag the world gates something behind', () => {
+    // A gate on a flag nothing sets is content the player can never reach --
+    // a hidden item that never appears, an exit that never opens.
+    const settable = new Set([...flagsSetInData(), ...flagsSetInCode()]);
+    const unreachable = everyGate()
+      .filter(g => !settable.has(g.flag))
+      .map(g => `${g.where} waits on "${g.flag}", which nothing sets`);
+    expect(unreachable).toEqual([]);
+  });
+
+  it('reads flag setters out of the engine, not just the world data', () => {
+    // Guards the check above: if the engine stops setting flags as literals,
+    // or a file gets renamed, the scan would silently return nothing and the
+    // reachability test would pass for the wrong reason.
+    expect(flagsSetInCode().size).toBeGreaterThan(0);
+  });
+
+  it('gates something behind a flag at all', () => {
+    // Likewise: an empty gate list would make the check vacuous.
+    expect(everyGate().length).toBeGreaterThan(0);
   });
 });

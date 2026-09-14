@@ -24,7 +24,7 @@ export function executeCommand(
     case 'take': return handleTake(cmd, state, room);
     case 'drop': return handleDrop(cmd, state, room, items);
     case 'use': return handleUse(cmd, state, room, items);
-    case 'open': return handleOpen(cmd, state, room, items);
+    case 'open': return handleOpen(cmd, state, room);
     case 'read': return handleRead(cmd, state, items, room);
     case 'talk': return handleTalk(cmd, state, room);
     case 'inventory': return handleInventory(state, items);
@@ -33,10 +33,10 @@ export function executeCommand(
     case 'load': return handleLoad();
     case 'wait': return handleWait();
     case 'push': case 'pull': case 'turn': return handleInteract(cmd, state, room);
-    case 'play': return handlePlay(cmd, state, room, items);
-    case 'light': return handleLight(cmd, state, items);
-    case 'ring': return handleRing(cmd, state, items);
-    case 'set': return handleSet(cmd, state, room);
+    case 'play': return handlePlay(cmd, state);
+    case 'light': return handleLight(cmd, state);
+    case 'ring': return handleRing(cmd, state);
+    case 'set': return handleSet(cmd, state);
     case 'combine': return handleCombine(cmd, state, items);
     case 'pray': return handlePray(state);
     case 'close': return [addText("You close it.", 'normal')];
@@ -288,7 +288,7 @@ function handleUse(cmd: ParsedCommand, state: GameState, room: Room, items: Reco
 }
 
 // --- OPEN ---
-function handleOpen(cmd: ParsedCommand, state: GameState, room: Room, items: Record<string, Item>): CommandResult {
+function handleOpen(cmd: ParsedCommand, state: GameState, room: Room): CommandResult {
   if (!cmd.noun) return [addText('Open what?', 'system')];
 
   // Check room examine entries for openable things
@@ -481,7 +481,7 @@ function handleInteract(cmd: ParsedCommand, state: GameState, room: Room): Comma
 }
 
 // --- PLAY ---
-function handlePlay(cmd: ParsedCommand, state: GameState, room: Room, items: Record<string, Item>): CommandResult {
+function handlePlay(cmd: ParsedCommand, state: GameState): CommandResult {
   if (!cmd.noun) return [addText('Play what?', 'system')];
 
   if (cmd.noun.includes('music box') && hasItem(state, 'music-box-wound')) {
@@ -502,7 +502,7 @@ function handlePlay(cmd: ParsedCommand, state: GameState, room: Room, items: Rec
 }
 
 // --- LIGHT ---
-function handleLight(cmd: ParsedCommand, state: GameState, items: Record<string, Item>): CommandResult {
+function handleLight(cmd: ParsedCommand, state: GameState): CommandResult {
   if (cmd.noun.includes('candle') && hasItem(state, 'ritual-candle')) {
     return [
       addText('The ritual candle flickers to life with an unnatural blue flame.', 'spooky'),
@@ -513,7 +513,7 @@ function handleLight(cmd: ParsedCommand, state: GameState, items: Record<string,
 }
 
 // --- RING ---
-function handleRing(cmd: ParsedCommand, state: GameState, items: Record<string, Item>): CommandResult {
+function handleRing(cmd: ParsedCommand, state: GameState): CommandResult {
   if (cmd.noun.includes('bell') && hasItem(state, 'ritual-bell')) {
     return [
       addText('The bell produces a deep, resonant tone that seems to come from everywhere at once.', 'spooky'),
@@ -524,7 +524,7 @@ function handleRing(cmd: ParsedCommand, state: GameState, items: Record<string, 
 }
 
 // --- SET ---
-function handleSet(cmd: ParsedCommand, state: GameState, room: Room): CommandResult {
+function handleSet(cmd: ParsedCommand, state: GameState): CommandResult {
   if (cmd.noun.includes('clock') && state.currentRoom === 'ground-hallway') {
     if (cmd.target?.includes('midnight') || cmd.target?.includes('12')) {
       return [

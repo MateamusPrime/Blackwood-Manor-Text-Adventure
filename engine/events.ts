@@ -1,4 +1,4 @@
-import { GameState, GameAction, Room, RoomEvent } from './types';
+import { GameState, GameAction, Room } from './types';
 
 export function processRoomEvents(
   room: Room,

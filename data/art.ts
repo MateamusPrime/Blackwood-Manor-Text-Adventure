@@ -464,7 +464,7 @@ export const roomArt: Record<string, string> = {
   |___|_____________|___|
    ~ eyes follow you ~  `,
 
-  'bathroom': `
+  'master-bathroom': `
    _____________________
   |  .-------------.    |
   |  |  old  tub   |    |
@@ -476,7 +476,7 @@ export const roomArt: Record<string, string> = {
   |                      |
   |  [ mirror ]   sink   |
   |  .-------.  .----.   |
-  |  | crack |  |    |   |
+  |  | clear |  |    |   |
   |  '-------'  '----'   |
   |_____________________|
    ~ dripping tap ~     `,
@@ -498,7 +498,7 @@ export const roomArt: Record<string, string> = {
   |_____________________|
    ~ barely lived in ~  `,
 
-  'greenhouse': `
+  'conservatory': `
    _____________________
   |  /\\/\\/\\/\\/\\/\\  |
   | /  glass roof    \\  |
@@ -564,4 +564,49 @@ export const roomArt: Record<string, string> = {
   |   |             |   |
   |___|_____________|___|
    ~~ Blackwood Manor ~~ `,
+
+  'pantry': `
+   _____________________
+  |  _________________  |
+  | | (o) (o) (o) (o) | |
+  | |_________________| |
+  | | (o) (~) (o) (o) | |
+  | |_________________| |
+  | | (o) (o) (~) (o) | |
+  | |_________________| |
+  | | (o) (o) (o) (o) | |
+  | |_________________| |
+  |   preserved things  |
+  |_____________________|
+   ~ one of them moves ~`,
+
+  'guest-bedroom': `
+   _____________________
+  | .-----------------. |
+  | |                 | |
+  | |    made   BED   | |
+  | |                 | |
+  | |_________________| |
+  |                     |
+  |  .-------.          |
+  |  | . . . |   dust   |
+  |  | garden|  settles |
+  |  |_______|          |
+  |_____________________|
+     ~ never slept in ~`,
+
+  'attic-stairs': `
+   _____________________
+  | cobwebs :::::::::   |
+  |                ___  |
+  |             __|   | |
+  |          __|      | |
+  |       __|         | |
+  |    __|            | |
+  |   |               | |
+  |   |   up to the   | |
+  |   |     attic     | |
+  |   |_______________| |
+  |_____________________|
+    ~ each step groans ~`,
 };

@@ -7,7 +7,7 @@ interface ArtPanelProps {
 }
 
 export default function ArtPanel({ artKey }: ArtPanelProps) {
-  const art = roomArt[artKey] ?? roomArt['default'] ?? '';
+  const art = roomArt[artKey] ?? roomArt['_default'] ?? '';
 
   return (
     <div

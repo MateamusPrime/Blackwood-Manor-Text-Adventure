@@ -273,33 +273,45 @@ describe('items', () => {
   });
 });
 
-// data/art.ts defines 33 panels for 33 rooms, but five artKeys do not line up
-// by name, so these rooms render an empty panel: ArtPanel falls back to
-// roomArt['default'], which is not defined either. Five panels go unused in
-// turn (bathroom, drawing-room, greenhouse, hallway, outside-crypt), so this is
-// a naming mismatch rather than missing art. Listed explicitly so the check
-// below still catches any NEW room that loses its art, and so the list shrinks
-// as the keys are reconciled.
-const ROOMS_WITH_NO_ART = [
-  'pantry',
-  'conservatory',
-  'master-bathroom',
-  'guest-bedroom',
-  'attic-stairs',
-];
+// The panel ArtPanel falls back to when a room's artKey is missing. It belongs
+// to no room by design.
+const FALLBACK_ART_KEY = '_default';
+
+// Panels that belong to no room. They are leftovers keyed by names the world
+// does not use, kept rather than deleted, and listed here so a NEW orphan --
+// art drawn under a key that never reaches the screen -- still fails the suite.
+const UNUSED_ART = ['drawing-room', 'hallway', 'outside-crypt'];
 
 describe('art', () => {
-  it('has a panel for every room except the known gaps', () => {
-    const missing = roomEntries
-      .filter(([key, room]) => !roomArt[room.artKey] && !ROOMS_WITH_NO_ART.includes(key))
-      .map(([key]) => key);
+  it('has a panel for every room', () => {
+    const missing = roomEntries.filter(([, room]) => !roomArt[room.artKey]).map(([key]) => key);
     expect(missing).toEqual([]);
   });
 
-  it('still needs art for each room on the known-gap list', () => {
-    // Fails once a gap is filled, as a prompt to shorten the list above.
-    const stillMissing = ROOMS_WITH_NO_ART.filter(key => !roomArt[rooms[key].artKey]);
-    expect(stillMissing).toEqual(ROOMS_WITH_NO_ART);
+  it('keys every panel to the id of the room that shows it', () => {
+    // data/rooms.ts sets artKey to the room's own id throughout; this keeps a
+    // renamed room from silently leaving its panel behind.
+    const mismatched = roomEntries
+      .filter(([key, room]) => room.artKey !== key)
+      .map(([key, room]) => `${key} -> ${room.artKey}`);
+    expect(mismatched).toEqual([]);
+  });
+
+  it('defines the panel ArtPanel falls back to', () => {
+    expect(roomArt[FALLBACK_ART_KEY]).toBeTruthy();
+  });
+
+  it('draws no panel that no room can reach', () => {
+    const used = new Set(roomEntries.map(([, room]) => room.artKey));
+    const orphans = Object.keys(roomArt)
+      .filter(k => k !== FALLBACK_ART_KEY && !used.has(k) && !UNUSED_ART.includes(k));
+    expect(orphans).toEqual([]);
+  });
+
+  it('still has every known-unused panel', () => {
+    // Fails once an orphan finds a room, as a prompt to shorten the list above.
+    const used = new Set(roomEntries.map(([, room]) => room.artKey));
+    expect(UNUSED_ART.filter(k => !used.has(k))).toEqual(UNUSED_ART);
   });
 
   it('draws something in every panel', () => {

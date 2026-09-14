@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Lint, typecheck, test, build
+    name: Lint, typecheck, test, build, play
     runs-on: ubuntu-latest
 
     steps:
@@ -43,3 +43,22 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # The browser is not in the npm install; CI fetches it, and only the one
+      # the suite uses.
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # Plays the game start to finish against the built app. The unit suite
+      # tests the engine in isolation and cannot tell whether the assembled
+      # game is still winnable.
+      - name: Playthrough
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

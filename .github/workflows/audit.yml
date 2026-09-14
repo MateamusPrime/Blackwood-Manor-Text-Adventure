@@ -1,0 +1,40 @@
+name: Audit
+
+# A second net behind Dependabot, which only raises security PRs when the
+# repository has Dependabot alerts switched on. This needs no repo settings: it
+# just runs npm audit on a schedule and fails loudly, which surfaces in Actions
+# and notifies the owner.
+#
+# Deliberately not part of the PR gate. An advisory can land against a
+# transitive dependency at any moment, and blocking every unrelated pull request
+# until someone upgrades is a good way to teach people to ignore the signal.
+
+on:
+  schedule:
+    # Mondays, 09:00 UTC.
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fails on high and critical. Moderate and below are reported for
+      # information but do not fail the run.
+      - name: Report every advisory
+        run: npm audit || true
+
+      - name: Fail on high or critical
+        run: npm audit --audit-level=high

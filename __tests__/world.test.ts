@@ -278,10 +278,8 @@ describe('items', () => {
 // to no room by design.
 const FALLBACK_ART_KEY = '_default';
 
-// Panels that belong to no room. They are leftovers keyed by names the world
-// does not use, kept rather than deleted, and listed here so a NEW orphan --
-// art drawn under a key that never reaches the screen -- still fails the suite.
-const UNUSED_ART = ['drawing-room', 'hallway', 'outside-crypt'];
+// Every panel now belongs to a room, so an orphan -- art drawn under a key
+// that never reaches the screen -- is a plain failure with no allowlist.
 
 describe('art', () => {
   it('has a panel for every room', () => {
@@ -304,15 +302,12 @@ describe('art', () => {
 
   it('draws no panel that no room can reach', () => {
     const used = new Set(roomEntries.map(([, room]) => room.artKey));
-    const orphans = Object.keys(roomArt)
-      .filter(k => k !== FALLBACK_ART_KEY && !used.has(k) && !UNUSED_ART.includes(k));
+    const orphans = Object.keys(roomArt).filter(k => k !== FALLBACK_ART_KEY && !used.has(k));
     expect(orphans).toEqual([]);
   });
 
-  it('still has every known-unused panel', () => {
-    // Fails once an orphan finds a room, as a prompt to shorten the list above.
-    const used = new Set(roomEntries.map(([, room]) => room.artKey));
-    expect(UNUSED_ART.filter(k => !used.has(k))).toEqual(UNUSED_ART);
+  it('draws exactly one panel per room, plus the fallback', () => {
+    expect(Object.keys(roomArt)).toHaveLength(roomEntries.length + 1);
   });
 
   it('draws something in every panel', () => {

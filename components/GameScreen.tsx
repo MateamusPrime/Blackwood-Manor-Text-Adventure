@@ -199,7 +199,7 @@ export default function GameScreen() {
             borderRight: '1px solid #1a3a1a',
           }}
         >
-          <ArtPanel artKey={state.currentRoom || 'default'} />
+          <ArtPanel artKey={state.currentRoom} />
           <div className="flex-1" />
           <Inventory inventory={state.inventory} items={items} />
         </div>

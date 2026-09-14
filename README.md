@@ -71,7 +71,7 @@ engine/
 data/
   rooms.ts        33 rooms, exits, items, NPCs
   items.ts        24 items and their interactions
-  art.ts          33 ASCII scenes
+  art.ts          33 ASCII scenes, one per room, plus a fallback
 components/       GameScreen, TextOutput, CommandInput, ArtPanel, Inventory, StatusBar
 hooks/
   useGame.ts      dispatches parsed commands into the reducer

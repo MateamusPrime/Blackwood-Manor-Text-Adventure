@@ -416,6 +416,20 @@ describe('executeCommand', () => {
     });
   });
 
+  // This file runs without a DOM, which is also what the server render sees.
+  // The round trip itself is covered in persistence.test.ts, under jsdom.
+  describe('save and load with no browser to store anything in', () => {
+    it('will not pretend to have saved', () => {
+      expect(saysSomethingLike(run('save'), 'cannot save in this environment')).toBe(true);
+    });
+
+    it('will not pretend to have loaded', () => {
+      const actions = run('load');
+      expect(saysSomethingLike(actions, 'cannot load in this environment')).toBe(true);
+      expect(actions.some(a => a.type === 'LOAD_STATE')).toBe(false);
+    });
+  });
+
   it('lists the verb set under help', () => {
     expect(saysSomethingLike(run('help'), 'commands:')).toBe(true);
   });

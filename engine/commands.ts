@@ -432,19 +432,52 @@ function handleSave(state: GameState): CommandResult {
   return [addText('Cannot save in this environment.', 'error')];
 }
 
+// A save file is the one input the engine did not produce itself: it can be
+// stale, hand-edited, or written by a build whose GameState had other fields.
+// JSON.parse only rejects the ones that are not JSON, so anything that gets
+// past it still has to be checked field by field before the reducer sees it.
+function isGameState(value: unknown): value is GameState {
+  if (typeof value !== 'object' || value === null) return false;
+  const s = value as Record<string, unknown>;
+  const isStringList = (v: unknown) => Array.isArray(v) && v.every(e => typeof e === 'string');
+  const isPlainObject = (v: unknown) =>
+    typeof v === 'object' && v !== null && !Array.isArray(v);
+
+  return (
+    typeof s.currentRoom === 'string' &&
+    typeof s.previousRoom === 'string' &&
+    isStringList(s.inventory) &&
+    isPlainObject(s.roomStates) &&
+    isPlainObject(s.flags) &&
+    typeof s.health === 'number' &&
+    typeof s.maxHealth === 'number' &&
+    typeof s.moveCount === 'number' &&
+    Array.isArray(s.textLog) &&
+    typeof s.gameOver === 'boolean' &&
+    typeof s.won === 'boolean' &&
+    isStringList(s.visitedRooms) &&
+    isStringList(s.firedEvents)
+  );
+}
+
 function handleLoad(): CommandResult {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('blackwood-manor-save');
     if (saved) {
+      const corrupted = addText('The save file is corrupted. The manor has consumed it.', 'error');
+      let parsed: unknown;
       try {
-        const loadedState = JSON.parse(saved) as GameState;
-        return [
-          { type: 'LOAD_STATE', state: loadedState },
-          addText('Game restored. You are back where you left off...', 'system'),
-        ];
+        parsed = JSON.parse(saved);
       } catch {
-        return [addText('The save file is corrupted. The manor has consumed it.', 'error')];
+        return [corrupted];
       }
+      // Loading a GameState-shaped hole takes the whole page down, so refuse in
+      // character instead and leave the player's current game running.
+      if (!isGameState(parsed)) return [corrupted];
+      return [
+        { type: 'LOAD_STATE', state: parsed },
+        addText('Game restored. You are back where you left off...', 'system'),
+      ];
     }
     return [addText('No save file found.', 'system')];
   }

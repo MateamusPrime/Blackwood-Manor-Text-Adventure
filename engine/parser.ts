@@ -58,7 +58,7 @@ export function parseCommand(input: string): ParsedCommand {
   }
 
   const firstWord = words[0];
-  let verb = VERB_ALIASES[firstWord] || firstWord;
+  const verb = VERB_ALIASES[firstWord] || firstWord;
   const rest = words.slice(1);
 
   // "go north" or "go to kitchen"

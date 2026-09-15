@@ -207,3 +207,79 @@ describe('useGame', () => {
     });
   });
 });
+
+// --- The two endings ---------------------------------------------------------
+//
+// Banishment is what the ritual buys: the Entity is sent back. The mirror room
+// is optional and easy to miss -- the portraits have to be examined in the right
+// order before the portal opens -- so the shard it holds does not gate the win.
+// It changes what the win is. Nothing shorter than a full game can reach either
+// ending, so these play one.
+
+/** The canonical solution, front porch to the Final Chamber door. */
+const THE_WINNING_ROUTE = [
+  'north', 'take torn diary page', 'west',
+  'look at plates', 'take silver key',
+  'east', 'east', 'use silver key on jewelry box',
+  'west', 'west', 'south', 'take rusty knife', 'east', 'take black candle',
+  'west', 'south', 'take music box', 'talk to maid',
+  'north', 'north', 'east', 'north', 'set clock to midnight',
+  'northeast', 'read scrawled note', 'southwest',
+  'west', 'take black rose', 'south', 'use black rose on angel', 'take angel tears',
+  'north', 'north', 'south',
+  'up', 'east', 'look at bed', 'take tiny brass key', 'use tiny brass key on music box',
+  'north', 'take torn diary page', 'south', 'west', 'north', 'take silver bell',
+  'west', 'set safe to 10-31-89',
+  'east', 'east', 'talk to child', 'play music box', 'take torn diary page', 'use diary',
+  'south', 'south', 'west', 'pull bookshelf', 'take ritual book',
+  'east', 'down', 'north', 'north', 'down', 'north', 'north', 'north',
+  'light candle', 'ring bell', 'pray', 'talk to ghost',
+];
+
+/** The detour that opens the mirror, taken from the upper hallway. */
+const THE_MIRROR_DETOUR = [
+  'look at woman', 'look at children', 'look at man',
+  'northwest', 'take mirror shard', 'southeast',
+];
+
+describe('the endings', () => {
+  it('banishes the Entity, for the player who never found the mirror', () => {
+    const { result, play, log } = game();
+    play(...THE_WINNING_ROUTE, 'north');
+
+    // Without the shard the Entity is only afraid of the ritual.
+    play('talk to entity');
+    expect(log()).toContain('THE BINDING');
+    expect(log()).not.toContain('THE GLASS');
+
+    play('use ritual book on entity');
+    expect(result.current.state.won).toBe(true);
+    expect(log()).toContain('The Entity is banished');
+    expect(log()).toContain('You have survived Blackwood Manor');
+  });
+
+  it('unmakes the Entity, for the player who held the shard up to it', () => {
+    const { result, play, log } = game();
+    // The portraits are in the upper hallway, which the route passes through on
+    // its way upstairs. Detour there, then rejoin it.
+    const upstairs = THE_WINNING_ROUTE.indexOf('up');
+    play(...THE_WINNING_ROUTE.slice(0, upstairs + 1), 'north');
+    play(...THE_MIRROR_DETOUR, 'south');
+    play(...THE_WINNING_ROUTE.slice(upstairs + 1));
+
+    expect(result.current.state.inventory).toContain('mirror-shard');
+
+    play('north', 'use mirror shard on entity');
+    expect(result.current.state.flags['entity-weakened']).toBe(true);
+
+    // The Entity says so, rather than the player having to infer it from the
+    // ending. The ritual is done by now too, and the mirror still wins the line.
+    play('talk to entity');
+    expect(log()).toContain('TAKE AWAY THE GLASS');
+
+    play('use ritual book on entity');
+    expect(result.current.state.won).toBe(true);
+    expect(log()).toContain('it comes apart');
+    expect(log()).toContain('no one else will have to');
+  });
+});

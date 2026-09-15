@@ -8,6 +8,22 @@ import { GameAction } from '../engine/types';
 import { rooms } from '../data/rooms';
 import { items } from '../data/items';
 
+// The two ways the night can end. Banishment is what the ritual buys you: the
+// Entity is sent back, and the manor is quiet for now. A player who found the
+// portraits, walked through the mirror and held the shard up to the Entity gets
+// the other one -- it is made to look at itself, and does not survive it.
+const ENDING_BANISHED =
+  'Dawn breaks. The Entity is banished. Blackwood Manor falls silent at last. ' +
+  'You stumble out into the morning light, forever changed, but alive. ' +
+  'You have survived Blackwood Manor!';
+
+const ENDING_UNMADE =
+  'Dawn breaks. The Entity does not flee -- held in the mirror\'s gaze, made to ' +
+  'look upon what it is, it comes apart, and the shard goes dark and cold in ' +
+  'your hand. Nothing is sent back, because nothing is left to send. ' +
+  'Blackwood Manor is quiet, and will stay quiet. ' +
+  'You have survived Blackwood Manor -- and no one else will have to.';
+
 export function useGame() {
   const [state, dispatch] = useReducer(gameReducer, undefined, getInitialState);
 
@@ -215,12 +231,13 @@ export function useGame() {
       actions.push({ type: 'ADD_TEXT', entry: { text: 'You read the words aloud, but they feel hollow and powerless. The Entity laughs. You must perform the ritual first...', type: 'spooky' } });
     }
 
-    // Win condition: entity banished
+    // Win condition: entity banished. How well depends on whether the player
+    // ever found the mirror room and made the Entity look at itself.
     if (actions.some(a => a.type === 'SET_FLAG' && 'flag' in a && a.flag === 'entity-banished')) {
       actions.push({
         type: 'GAME_OVER',
         won: true,
-        message: 'Dawn breaks. The Entity is banished. Blackwood Manor falls silent at last. You stumble out into the morning light, forever changed, but alive. You have survived Blackwood Manor!',
+        message: state.flags['entity-weakened'] ? ENDING_UNMADE : ENDING_BANISHED,
       });
     }
 

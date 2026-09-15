@@ -780,6 +780,13 @@ export const rooms: Record<string, Room> = {
             text: 'YOU DARE FACE ME? I HAVE DEVOURED THE BLACKWOODS. I WILL DEVOUR YOU.',
             setsFlag: 'entity-encountered',
           },
+          // First conditional line wins, so the mirror takes precedence: an
+          // Entity that has been made to look at itself has nothing to say
+          // about the ritual.
+          {
+            text: 'THE GLASS. TAKE AWAY THE GLASS. I WILL NOT LOOK. I WILL NOT LOOK AT IT.',
+            condition: 'entity-weakened',
+          },
           {
             text: 'NO! THE BINDING... THE WORDS... IMPOSSIBLE!',
             condition: 'ritual-complete',

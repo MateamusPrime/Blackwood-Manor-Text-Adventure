@@ -17,16 +17,13 @@ export function useCommandHistory() {
   }, []);
 
   const navigateUp = useCallback((): string => {
-    setIndex(prev => {
-      const newIndex = prev === -1
-        ? history.length - 1
-        : Math.max(0, prev - 1);
-      return newIndex;
-    });
-    // Return value computed outside setState to avoid stale closure
+    // One step back, or the newest command if the player is on a blank line.
+    // Computed once: the caller puts the returned command in the input, so the
+    // index this moves to and the command handed back have to be the same one.
     const newIndex = index === -1
       ? history.length - 1
       : Math.max(0, index - 1);
+    setIndex(newIndex);
     return history[newIndex] ?? '';
   }, [history, index]);
 

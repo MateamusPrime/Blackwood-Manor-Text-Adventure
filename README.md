@@ -64,7 +64,7 @@ The current build has **33 rooms, 24 items, 19 world flags, 4 NPCs with conditio
 ```
 engine/
   parser.ts       text -> { verb, noun, preposition, target }
-  commands.ts     one handler per verb, 580 lines
+  commands.ts     one handler per verb, 613 lines
   gameState.ts    reducer over a GameAction union
   events.ts       room entry events, once-firing
   types.ts        the whole data model
@@ -78,7 +78,7 @@ hooks/
   useCommandHistory.ts   arrow-key recall
 ```
 
-State is a single `GameState` object moved by a reducer over a typed `GameAction` union, which is what makes `save` and `load` two lines: serialize the state, restore the state.
+State is a single `GameState` object moved by a reducer over a typed `GameAction` union, which is what makes `save` one line: serialize the state. `load` is longer, because a save file is the one input the engine did not produce itself — it can be stale, hand-edited, or written by an older build — so it gets checked field by field before the reducer is allowed anywhere near it.
 
 ## Running it
 
@@ -94,15 +94,29 @@ Open http://localhost:3000.
 ```bash
 npm test          # once
 npm run test:watch
+npm run test:e2e  # the playthrough, in a real browser
 ```
 
-228 Vitest tests over the engine and the world data: the parser's aliases and
-preposition handling, the reducer, room entry events, every command handler
-against a fixture world, and integrity checks over `data/` — that every exit
-leads to a real room, every locked exit can be opened, every granted item
-exists, and every room has art.
+348 Vitest tests over the engine, the world data and the interface: the
+parser's aliases and preposition handling, the reducer, room entry events,
+every command handler against a fixture world, the rules that live only in
+`useGame` (the safe combination, the portrait order, winding the music box),
+saving and loading through `localStorage`, arrow-key recall, and every
+component from the status bar to the title screen.
 
-CI runs `lint`, `typecheck`, `test` and `build` on every pull request.
+The integrity checks over `data/` are the ones that catch content mistakes:
+every exit leads to a real room, every locked exit can be opened, every
+granted item exists, every room has its own art panel and no panel is
+orphaned, and every flag something waits on is one that something else can
+set.
+
+`e2e/playthrough.spec.ts` then plays the game in a real browser, START to the
+banishment, about seventy typed commands. The unit tests can tell you the
+engine still works; only this can tell you the world data still threads
+together into a game that can be won.
+
+CI runs `lint`, `typecheck`, `test`, `build` and the playthrough on every
+pull request.
 
 ## License
 

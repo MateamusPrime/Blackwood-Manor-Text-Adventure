@@ -113,6 +113,10 @@ test('the manor can be escaped', async ({ page }) => {
   await send(page, 'use ritual book on entity');
   await output(page, /You have survived Blackwood Manor/);
 
+  // The ending overlay, which only a finished game draws. Nothing shorter than
+  // a full playthrough can reach it, so this is the only place it is checked.
+  await expect(page.getByText('YOU ESCAPED THE MANOR')).toBeVisible();
+
   // Won without taking a hit: the ending is reachable without losing health,
   // so a change that starts damaging the player on this route shows up here.
   await expect(page.getByText('♥♥♥♥♥')).toBeVisible();
